@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tools on ilikechicken</title><link>http://ilikechicken.me/tools/</link><description>Recent content in Tools on ilikechicken</description><generator>Hugo</generator><language>en-us</language><atom:link href="http://ilikechicken.me/tools/index.xml" rel="self" type="application/rss+xml"/><item><title>File Extension Analyzer</title><link>http://ilikechicken.me/tools/file-extension-analyzer/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://ilikechicken.me/tools/file-extension-analyzer/</guid><description>&lt;script defer>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Tools on ilikechicken</title><link>http://ilikechicken.me/tools/</link><description>Recent content in Tools on ilikechicken</description><generator>Hugo</generator><language>en-us</language><atom:link href="http://ilikechicken.me/tools/index.xml" rel="self" type="application/rss+xml"/><item><title>File Extension Analyzer</title><link>http://ilikechicken.me/tools/file-extension-analyzer/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://ilikechicken.me/tools/file-extension-analyzer/</guid><description>&lt;script defer&gt;
 async function onSubmit(event) {
  event.preventDefault();
  let file = document.getElementById('file');
@@ -50,23 +50,23 @@ async function onSubmit(event) {
  }
 }
 
-&lt;/script>
-&lt;input onchange="onSubmit(event)" type="file" id="file" name="file" class="form-control" style="display: inline">
-&lt;h2 id="msg" style="margin-top: 10px">&lt;/h2>
-&lt;div id="result">
- &lt;table class="table file-table">
- &lt;thead>
- &lt;tr>
- &lt;th scope="col">#&lt;/th>
- &lt;th scope="col">File Extension&lt;/th>
- &lt;th scope="col">Probability&lt;/th>
- &lt;/tr>
- &lt;/thead>
- &lt;tbody id="tbody">
- &lt;/tbody>
- &lt;/table>
-&lt;/div></description></item><item><title>Timezone Converter</title><link>http://ilikechicken.me/tools/timezone-converter/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://ilikechicken.me/tools/timezone-converter/</guid><description>&lt;script src="http://ilikechicken.me/js/chrono.js" defer>&lt;/script>
-&lt;script defer>
+&lt;/script&gt;
+&lt;input onchange="onSubmit(event)" type="file" id="file" name="file" class="form-control" style="display: inline"&gt;
+&lt;h2 id="msg" style="margin-top: 10px"&gt;&lt;/h2&gt;
+&lt;div id="result"&gt;
+ &lt;table class="table file-table"&gt;
+ &lt;thead&gt;
+ &lt;tr&gt;
+ &lt;th scope="col"&gt;#&lt;/th&gt;
+ &lt;th scope="col"&gt;File Extension&lt;/th&gt;
+ &lt;th scope="col"&gt;Probability&lt;/th&gt;
+ &lt;/tr&gt;
+ &lt;/thead&gt;
+ &lt;tbody id="tbody"&gt;
+ &lt;/tbody&gt;
+ &lt;/table&gt;
+&lt;/div&gt;</description></item><item><title>Timezone Converter</title><link>http://ilikechicken.me/tools/timezone-converter/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>http://ilikechicken.me/tools/timezone-converter/</guid><description>&lt;script src="http://ilikechicken.me/js/chrono.js" defer&gt;&lt;/script&gt;
+&lt;script defer&gt;
 let typingTimer;
 let doneTypingInterval = 2000;
 let input = document.getElementById('time');
@@ -86,6 +86,6 @@ function doneTyping () {
  show.innerHTML = "Unable to process the time."
  }
 }
-&lt;/script>
-&lt;input type="text" class="time" id="time" placeholder="Try 'next friday at 2 pm est'">
-&lt;h4 id="show-time">&lt;/h4></description></item></channel></rss>
+&lt;/script&gt;
+&lt;input type="text" class="time" id="time" placeholder="Try 'next friday at 2 pm est'"&gt;
+&lt;h4 id="show-time"&gt;&lt;/h4&gt;</description></item></channel></rss>
