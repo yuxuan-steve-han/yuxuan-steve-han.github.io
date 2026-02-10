@@ -882,7 +882,7 @@
 
             <h2>The Setup</h2>
 
-            <p>Jam o' Lantern 2024 was a Halloween-themed game jam, and our team of six decided to go all in on the spirit of it. The team was split across disciplines: four programmers (myself, Angela Rhee, Ryan Choi, and Andrew Zhang, with Yuxuan Han also contributing), Shiori Thompson on music and sound design, and Aasiya D'Urso and Vicky Xue handling all of the art. Having six people on a jam team is unusual. Most jam teams are two to four. The larger team gave us more bandwidth, but it also made coordination significantly harder.</p>
+            <p>Jam o' Lantern 2024 was a Halloween-themed game jam, and our team of six decided to go all in on the spirit of it. The team was split across disciplines: four programmers (myself, Angela Rhee, Ryan Choi, and Andrew Zhang), Shiori Thompson on music and sound design, and Aasiya D'Urso and Vicky Xue handling all of the art. Having six people on a jam team is unusual. Most jam teams are two to four. The larger team gave us more bandwidth, but it also made coordination significantly harder.</p>
 
             <p>The concept we landed on was an asymmetric local multiplayer game set in a sewer. Player one controls a rat navigating through the sewer system, collecting items, and trying to reach the legendary Cheese Hat. Player two controls a spider whose job is to stop the rat by any means available: shooting webs to slow the rat down, picking up items, and teleporting the cheese to a new location. The two players share a screen and use different control schemes.</p>
 
@@ -1026,7 +1026,7 @@
 
             <p>Credit where it is due. This game was a team effort in the fullest sense.</p>
 
-            <p><strong>Programmers:</strong> Angela Rhee, Ryan Choi, Andrew Zhang, Yuxuan Han, and myself. <strong>Music and Sound:</strong> Shiori Thompson. <strong>Art:</strong> Aasiya D'Urso and Vicky Xue.</p>
+            <p><strong>Programmers:</strong> Angela Rhee, Ryan Choi, Andrew Zhang, and myself. <strong>Music and Sound:</strong> Shiori Thompson. <strong>Art:</strong> Aasiya D'Urso and Vicky Xue.</p>
 
             <p>The game is available for download on <a href="https://shiroandmilk.itch.io/nibbles-and-nightmares-in-the-quest-for-the-cheese-hat" target="_blank">itch.io</a> for Windows and macOS. You will need two players and a keyboard (and a mouse for the spider). Grab a friend and fight over the cheese hat. It is worth the five minutes.</p>
 
@@ -1190,6 +1190,43 @@
 
             <p>The fix involved two changes. First, I disabled diagonal movement in the A* grid. This forces all paths to use cardinal directions only, which eliminates corner cutting entirely at the cost of slightly less natural-looking paths. Second, I added a collision check along the movement vector before each step. If the raycast between the enemy's current position and the next waypoint hits a wall, the enemy pauses and requests a new path.</p>
 
+            <p>Here is the crucial part: <strong>you must restrict the A* algorithm itself to only consider 4 neighbors, not 8.</strong> Many implementations default to 8-directional movement. Simply changing the movement code is not enough if your pathfinding is still generating diagonal paths.</p>
+
+            <div class="code-block">
+                <div class="code-block-header">
+                    <span class="code-block-lang">GDScript</span>
+                    <span>pathfinding.gd — 4-directional neighbor generation (THE FIX)</span>
+                </div>
+                <pre><span class="comment"># WRONG: 8 directions (includes diagonals)</span>
+<span class="keyword">func</span> <span class="func">_get_neighbors_8dir</span>(cell: <span class="type">Vector2i</span>) -> <span class="type">Array</span>[<span class="type">Vector2i</span>]:
+    <span class="keyword">var</span> neighbors: <span class="type">Array</span>[<span class="type">Vector2i</span>] = []
+    <span class="keyword">for</span> x <span class="keyword">in</span> <span class="func">range</span>(-<span class="number">1</span>, <span class="number">2</span>):
+        <span class="keyword">for</span> y <span class="keyword">in</span> <span class="func">range</span>(-<span class="number">1</span>, <span class="number">2</span>):
+            <span class="keyword">if</span> x == <span class="number">0</span> <span class="keyword">and</span> y == <span class="number">0</span>:
+                <span class="keyword">continue</span>
+            <span class="keyword">var</span> neighbor = cell + Vector2i(x, y)
+            <span class="keyword">if</span> <span class="func">_is_walkable</span>(neighbor):
+                neighbors.<span class="func">append</span>(neighbor)
+    <span class="keyword">return</span> neighbors  <span class="comment"># Returns up to 8 neighbors - CAUSES CLIPPING!</span>
+
+<span class="comment"># CORRECT: 4 directions only (cardinal movement)</span>
+<span class="keyword">func</span> <span class="func">_get_neighbors</span>(cell: <span class="type">Vector2i</span>) -> <span class="type">Array</span>[<span class="type">Vector2i</span>]:
+    <span class="keyword">var</span> neighbors: <span class="type">Array</span>[<span class="type">Vector2i</span>] = []
+    <span class="keyword">const</span> DIRECTIONS = [
+        Vector2i(<span class="number">0</span>, -<span class="number">1</span>),  <span class="comment"># up</span>
+        Vector2i(<span class="number">0</span>, <span class="number">1</span>),   <span class="comment"># down</span>
+        Vector2i(-<span class="number">1</span>, <span class="number">0</span>),  <span class="comment"># left</span>
+        Vector2i(<span class="number">1</span>, <span class="number">0</span>)    <span class="comment"># right</span>
+    ]
+    
+    <span class="keyword">for</span> dir <span class="keyword">in</span> DIRECTIONS:
+        <span class="keyword">var</span> neighbor = cell + dir
+        <span class="keyword">if</span> <span class="func">_is_walkable</span>(neighbor):
+            neighbors.<span class="func">append</span>(neighbor)
+    
+    <span class="keyword">return</span> neighbors  <span class="comment"># Only 4 cardinal neighbors - prevents diagonal paths</span></pre>
+            </div>
+
             <div class="code-block">
                 <div class="code-block-header">
                     <span class="code-block-lang">GDScript</span>
@@ -1270,29 +1307,39 @@
                         .smoothline{stroke:#22d67a;stroke-width:2.5;fill:none}
                     </style>
                     <!-- BEFORE -->
-                    <text x="30" y="22" class="st">Before: Raw A* (18 waypoints)</text>
+                    <text x="30" y="22" class="st">Before: Raw A* (20 waypoints)</text>
                     <g transform="translate(20,30)">
-                        <!-- Corridor walls -->
                         <rect x="0" y="0" width="260" height="220" fill="#12121a" rx="4" stroke="#2a2a3a"/>
-                        <rect x="20" y="20" width="20" height="100" class="sw"/><rect x="60" y="20" width="20" height="60" class="sw"/><rect x="100" y="60" width="20" height="80" class="sw"/><rect x="160" y="20" width="20" height="100" class="sw"/><rect x="200" y="80" width="20" height="80" class="sw"/>
-                        <!-- Raw path: many tiny segments with dots at each -->
-                        <polyline points="30,200 30,180 30,160 30,140 50,140 50,120 50,100 70,100 90,100 90,80 90,60 90,40 110,40 130,40 150,40 150,60 150,80 150,100 150,120 180,120 180,100 180,80 180,60 200,60 220,60 240,60" class="rawline"/>
+                        <!-- Wall A: top-anchored pillar, forces path below -->
+                        <rect x="60" y="0" width="20" height="140" class="sw" rx="2"/>
+                        <!-- Wall B: bottom-anchored pillar, forces path above -->
+                        <rect x="160" y="80" width="20" height="140" class="sw" rx="2"/>
+                        <!-- Raw path: cell-by-cell cardinal movement (S-curve) -->
+                        <polyline points="10,190 30,190 50,190 70,190 90,190 110,190 130,190 150,190 150,170 150,150 150,130 150,110 150,90 150,70 150,50 150,30 170,30 190,30 210,30 250,30" class="rawline"/>
                         <!-- Dots at every waypoint -->
-                        <circle cx="30" cy="200" r="3" class="sr"/><circle cx="30" cy="180" r="3" class="sr"/><circle cx="30" cy="160" r="3" class="sr"/><circle cx="30" cy="140" r="3" class="sr"/><circle cx="50" cy="140" r="3" class="sr"/><circle cx="50" cy="120" r="3" class="sr"/><circle cx="50" cy="100" r="3" class="sr"/><circle cx="70" cy="100" r="3" class="sr"/><circle cx="90" cy="100" r="3" class="sr"/><circle cx="90" cy="80" r="3" class="sr"/><circle cx="90" cy="60" r="3" class="sr"/><circle cx="90" cy="40" r="3" class="sr"/><circle cx="110" cy="40" r="3" class="sr"/><circle cx="130" cy="40" r="3" class="sr"/><circle cx="150" cy="40" r="3" class="sr"/><circle cx="150" cy="100" r="3" class="sr"/><circle cx="180" cy="120" r="3" class="sr"/><circle cx="240" cy="60" r="3" class="sr"/>
-                        <text x="70" y="215" class="sl" style="fill:#f59e42">18 waypoints = constant stuttering</text>
+                        <circle cx="10" cy="190" r="3" class="sr"/><circle cx="30" cy="190" r="3" class="sr"/><circle cx="50" cy="190" r="3" class="sr"/><circle cx="70" cy="190" r="3" class="sr"/><circle cx="90" cy="190" r="3" class="sr"/><circle cx="110" cy="190" r="3" class="sr"/><circle cx="130" cy="190" r="3" class="sr"/><circle cx="150" cy="190" r="3" class="sr"/><circle cx="150" cy="170" r="3" class="sr"/><circle cx="150" cy="150" r="3" class="sr"/><circle cx="150" cy="130" r="3" class="sr"/><circle cx="150" cy="110" r="3" class="sr"/><circle cx="150" cy="90" r="3" class="sr"/><circle cx="150" cy="70" r="3" class="sr"/><circle cx="150" cy="50" r="3" class="sr"/><circle cx="150" cy="30" r="3" class="sr"/><circle cx="170" cy="30" r="3" class="sr"/><circle cx="190" cy="30" r="3" class="sr"/><circle cx="210" cy="30" r="3" class="sr"/><circle cx="250" cy="30" r="3" class="sr"/>
+                        <!-- Labels -->
+                        <text x="3" y="185" class="sl" style="fill:#22d67a;font-size:9px">A</text>
+                        <text x="244" y="25" class="sl" style="fill:#4fc3f7;font-size:9px">B</text>
+                        <text x="50" y="215" class="sl" style="fill:#f59e42">20 waypoints = constant stuttering</text>
                     </g>
                     <!-- AFTER -->
                     <text x="330" y="22" class="st">After: Smoothed (4 waypoints)</text>
                     <g transform="translate(320,30)">
                         <rect x="0" y="0" width="260" height="220" fill="#12121a" rx="4" stroke="#2a2a3a"/>
-                        <rect x="20" y="20" width="20" height="100" class="sw"/><rect x="60" y="20" width="20" height="60" class="sw"/><rect x="100" y="60" width="20" height="80" class="sw"/><rect x="160" y="20" width="20" height="100" class="sw"/><rect x="200" y="80" width="20" height="80" class="sw"/>
-                        <!-- Smoothed path: just 4 key waypoints -->
-                        <polyline points="30,200 50,100 90,40 180,60 240,60" class="smoothline"/>
-                        <circle cx="30" cy="200" r="5" class="sp"/><circle cx="50" cy="100" r="5" class="sp"/><circle cx="90" cy="40" r="5" class="sp"/><circle cx="180" cy="60" r="5" class="sp"/><circle cx="240" cy="60" r="5" class="sp"/>
+                        <!-- Same walls -->
+                        <rect x="60" y="0" width="20" height="140" class="sw" rx="2"/>
+                        <rect x="160" y="80" width="20" height="140" class="sw" rx="2"/>
+                        <!-- Smoothed path: 4 key waypoints, all segments verified wall-free -->
+                        <polyline points="10,190 150,146 150,70 250,30" class="smoothline"/>
+                        <circle cx="10" cy="190" r="5" class="sp"/><circle cx="150" cy="146" r="5" class="sp"/><circle cx="150" cy="70" r="5" class="sp"/><circle cx="250" cy="30" r="5" class="sp"/>
+                        <!-- Labels -->
+                        <text x="3" y="185" class="sl" style="fill:#22d67a;font-size:9px">A</text>
+                        <text x="244" y="25" class="sl" style="fill:#4fc3f7;font-size:9px">B</text>
                         <text x="60" y="215" class="sl" style="fill:#22d67a">4 waypoints = smooth movement</text>
                     </g>
                 </svg>
-                <div class="img-caption">Before and after path smoothing. Left: the raw A* output produces 18 waypoints through a corridor, causing the enemy to stutter and pause at every cell transition. Right: line-of-sight smoothing collapses the path to 4 key waypoints. The enemy moves in clean, direct lines between turns.</div>
+                <div class="img-caption">Before and after path smoothing. Left: the raw A* output produces 20 waypoints through an S-shaped corridor, causing the enemy to stutter and pause at every cell transition. Right: line-of-sight smoothing collapses the path to 4 key waypoints. Each line segment has verified clear line of sight — no wall intersections.</div>
             </div>
 
             <h2>Problem 3: The Recalculation Cascade</h2>
